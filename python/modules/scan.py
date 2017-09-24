@@ -83,7 +83,7 @@ class ScanISLES(object):
         volumes.append(v)
 
         if not test:
-            volume_path = os.path.join(db.tumor_dist_dir,
+            volume_path = os.path.join(db.lesion_dist_dir,
                                        self.name + '_' + str(size) +
                                        '_dist_map_' + str(orient) + '.bin')
             v = np.reshape(np.fromfile(volume_path, dtype='uint8'),
@@ -107,7 +107,7 @@ class ScanISLES(object):
 
         return np.reshape(np_array, (self.h, self.w, self.d))
 
-    def load_tumor_dist_maps(self, exp_out, s):
+    def load_lesion_dist_maps(self, exp_out, s):
         """Loading brain mask as numpy array."""
         """
             Arguments:
@@ -115,7 +115,7 @@ class ScanISLES(object):
             Returns:
                 brain mask as a numpy array
         """
-        tdm_path = os.path.join(exp_out, self.name + '_tumor_dist.bin_' + str(s))
+        tdm_path = os.path.join(exp_out, self.name + '_lesion_dist.bin_' + str(s))
         if os.path.exists(tdm_path):
             np_array = np.fromfile(tdm_path, dtype='uint8')
             return np.reshape(np_array, (s, s, self.d))
@@ -142,8 +142,8 @@ class ScanISLES(object):
         bm_path = os.path.join(exp_out, self.name + '_brain_mask.bin')
         self._compute_and_save_brain_mask(db, bm_path)
 
-    def _compute_and_save_tumor_distance_map(self, db, brain_mask,
-                                             tumor_distance_map_path):
+    def _compute_and_save_lesion_distance_map(self, db, brain_mask,
+                                              lesion_distance_map_path):
 
         v_seg = self.load_volume(db, 'OT')
         struct_elem = np.ones((3, 3, 3))
@@ -163,26 +163,26 @@ class ScanISLES(object):
                                         float(s) / self.w,
                                         1]) >= 0.5
             v = 1.0
-            tumor_dist_map = np.zeros((s, s, self.d))
+            lesion_dist_map = np.zeros((s, s, self.d))
             while(np.sum(mask) != s * s * self.d):
                 mask_d = morphology.binary_dilation(mask, struct_elem)
-                tumor_dist_map += (mask_d - mask) * v
+                lesion_dist_map += (mask_d - mask) * v
                 mask = np.copy(mask_d)
                 v += 1
 
-            tumor_dist_map *= brain
-            tumor_dist_map = np.clip(tumor_dist_map, a_min=0.0, a_max=255.0)
-            tumor_dist_map.astype('uint8').\
-                tofile(tumor_distance_map_path + '_' + str(s))
+            lesion_dist_map *= brain
+            lesion_dist_map = np.clip(lesion_dist_map, a_min=0.0, a_max=255.0)
+            lesion_dist_map.astype('uint8').\
+                tofile(lesion_distance_map_path + '_' + str(s))
 
-    def compute_tumor_distance_map(self, db, bm_exp_out, tdm_exp_out):
-        """Tumor distance map computation."""
+    def compute_lesion_distance_map(self, db, bm_exp_out, tdm_exp_out):
+        """Lesion distance map computation."""
         """
             Arguments:
                 db: DatabaseBRATS
                 exp_out: experiment output for meta data
         """
-        tdm_path = os.path.join(tdm_exp_out, self.name + '_tumor_dist.bin')
+        tdm_path = os.path.join(tdm_exp_out, self.name + '_lesion_dist.bin')
 
         brain_mask = self.load_brain_mask(bm_exp_out)
-        self._compute_and_save_tumor_distance_map(db, brain_mask, tdm_path)
+        self._compute_and_save_lesion_distance_map(db, brain_mask, tdm_path)

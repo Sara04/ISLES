@@ -89,18 +89,18 @@ def main():
         print "Data already augmented"
 
     # _______________________________________________________________________ #
-    # 6. Computing tumor distance maps
+    # 6. Computing lesion distance maps
     # _______________________________________________________________________ #
-    print "Computing tumor distance maps..."
-    tdm_output_path = os.path.join(args.exp_out, 'tumor_dist_maps', 'train')
-    db.tumor_dist_dir = tdm_output_path
+    print "Computing lesion distance maps..."
+    tdm_output_path = os.path.join(args.exp_out, 'lesion_dist_maps', 'train')
+    db.lesion_dist_dir = tdm_output_path
     done_path = os.path.join(tdm_output_path, 'done')
     if not os.path.exists(done_path):
-        prep.compute_tumor_distance_maps(db)
+        prep.compute_lesion_distance_maps(db)
         with open(done_path, 'w') as f:
             f.close()
     else:
-        print "Tumor distance maps already computed"
+        print "Lesion distance maps already computed"
 
     # _______________________________________________________________________ #
 
