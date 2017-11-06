@@ -33,7 +33,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
             normalize: normalize data within given mask
             normalize_volumes: normalize all volumes of a scan within
                 brain and skul mask, and clip if required
-            name: reproduce PreprocessorBRATS object's name
+            name: reproduce PreprocessorISLESBasic object's name
     """
     def __init__(self, norm_type,
                  clip=True, clip_l=-2.0, clip_u=2.0):
@@ -114,17 +114,17 @@ class PreprocessorISLESBasic(PreprocessorISLES):
                                     [data_dict[s].h,
                                      data_dict[s].w,
                                      data_dict[s].d])
-            mask = (np.sum(brain_mask != 0, axis=2) != 0).astype('float32')
 
+            mask = (np.sum(brain_mask != 0, axis=2) != 0).astype('float32')
             x, y = np.where(mask)
             p = np.polyfit(y, x, 1)
-
             sum_ = np.sum(mask)
 
             center_x =\
                 np.sum(np.arange(mask.shape[0]) * np.sum(mask, axis=1)) / sum_
             center_y =\
                 np.sum(np.arange(mask.shape[1]) * np.sum(mask, axis=0)) / sum_
+
             angle = np.arctan(p[0])
             rot_matrix = [[0, 0], [0, 0]]
             rot_matrix[0] = [np.cos(angle), np.sin(angle)]
@@ -179,7 +179,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         """Getting a dictionary of the normalization parameters."""
         """
             Arguments:
-                db: DatabaseBRATS
+                db: DatabaseISLES
                 exp_out: path to the experiment meta output
                 mode: training or validation subsets
         """
