@@ -14,7 +14,7 @@ class DatabaseISLES(object):
             db_path: path where training and testing subsets are stored
             n_classes: number of brain region labels
             classes: class labels
-                0 - non-lesion
+                0 - non-stroke lesion
                 1 - stroke lesion
             n_modalities: number of MRI modalities
             modalities: list of MRI modalities, namely
@@ -25,14 +25,14 @@ class DatabaseISLES(object):
                 Tmax - time to maximum
                 TTP - time to peak
             sizes: list of possible volume's slices' size (width and height)
-            valid_p: percentage of training data that will be used for
-                algorithm's training validation
+            valid_p: percentage of training data that will be used for the
+                algorithm's validation during training
 
             train_dict: dictionary for storing training scans
             test_dict: dictionary for storing test scans
 
-            train_scans: list for storing scans used for algorithm training
-            valid_scans: list for storing scans used for algorithm validation
+            train_scans: list for storing scans used for algorithm's training
+            valid_scans: list for storing scans used for algorithm's validation
 
             Directories:
             brain_masks_dir: path to the brain's masks
@@ -44,8 +44,8 @@ class DatabaseISLES(object):
             load_training_dict: creating a dictionary of training scans
             load_testing_dict: creating a dictionary of testing scans
             train_valid_split: split training database into train and valid
-                subsets (validation dataset is used for evaluation)
-            name: returns database name with train valid split parameter
+                subsets
+            name: returns database's name with train valid split parameter
     """
 
     def __init__(self, db_path, n_classes=2, classes=[0, 1],
@@ -109,7 +109,7 @@ class DatabaseISLES(object):
         """Loading training dictionary."""
         """
             Arguments:
-                folder_name: folder where the training data is stored
+                folder_name: folder where the testing data is stored
         """
         folders = os.listdir(os.path.join(self.db_path, folder_name))
         for fo in folders:
