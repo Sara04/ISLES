@@ -7,7 +7,7 @@ class PreprocessorISLES(object):
     """
         Methods:
             get_normalization_parameters: creates a dictionary
-                of parameters for volumes' preprocessing
+                of parameters for volumes' normalization
             get_alignment_parameters: creates a dictionary
                 of parameters for volumes' alignment
             name: reproduce PreprocessorISLES object's name

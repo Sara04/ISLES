@@ -26,13 +26,13 @@ class PreprocessorISLESBasic(PreprocessorISLES):
             clip_l: lower clip value
 
         Methods:
-            compute_norm_params: compute normalization parameters for
-                given volume
-            get_preprocessing_parameters: get preprocessing parameters for
-                selected database (train, valid or test)
-            normalize: normalize data within given mask
-            normalize_volumes: normalize all volumes of a scan within
-                brain and skul mask, and clip if required
+            get_normalization_parameters: get normalization parameters
+                for the selected database (train or test)
+            get_alignment_parameters: get alignment parameters
+                for the selected database (train or test)
+            normalize: normalization of the input volume
+            align: alignment of the input volume
+            dealign: dealignment of the input volume
             name: reproduce PreprocessorISLESBasic object's name
     """
     def __init__(self, norm_type,
@@ -45,24 +45,19 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         self.train_align_params = {}
         self.test_align_params = {}
 
-        self.clip = clip
-        self.clip_l = clip_l
-        self.clip_u = clip_u
+        self.clip, self.clip_l, self.clip_u = [clip, clip_l, clip_u]
 
     def _compute_mean_std_params(self, volume):
-        non_zeros = volume != 0.0
-        mean_ = np.mean(volume[non_zeros == 1])
-        std_ = np.std(volume[non_zeros == 1])
-
+        mean_ = np.mean(volume[volume != 0.0])
+        std_ = np.std(volume[volume != 0.0])
         return {'mean': float(mean_), 'std': float(std_)}
 
     def _compute_min_max_params(self, volume):
         max_ = np.max(volume[volume != 0])
         min_ = np.min(volume[volume != 0])
-
         return {'min': float(min_), 'max': float(max_)}
 
-    def compute_norm_params(self, volume):
+    def _compute_norm_params(self, volume):
         """Normalization parameters computation."""
         """
             Arguments:
@@ -83,7 +78,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
             for m in db.modalities:
 
                 volume = data_dict[s].load_volume(db, m)
-                volume_norm_params = self.compute_norm_params(volume)
+                volume_norm_params = self._compute_norm_params(volume)
 
                 if s not in n_params:
                     n_params[s] = {}
@@ -99,7 +94,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         sys.stdout.write("\n")
         return n_params
 
-    def _compute_alignment_parameters(self, db, data_dict):
+    def _compute_alignment_parameters(self, db, meta, data_dict):
         r_params = {}
         n_subjects = len(data_dict)
         for s_idx, s in enumerate(data_dict):
@@ -107,14 +102,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
             if s not in r_params:
                 r_params[s] = {}
 
-            brain_mask_path = os.path.join(db.brain_masks_dir,
-                                           s + '_brain_mask.bin')
-            brain_mask = np.fromfile(brain_mask_path, dtype='uint8')
-            brain_mask = np.reshape(brain_mask,
-                                    [data_dict[s].h,
-                                     data_dict[s].w,
-                                     data_dict[s].d])
-
+            brain_mask = meta.load_brain_mask(db, meta, data_dict[s])
             mask = (np.sum(brain_mask != 0, axis=2) != 0).astype('float32')
             x, y = np.where(mask)
             p = np.polyfit(y, x, 1)
@@ -141,38 +129,35 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         return r_params
 
     def _load_normalization_parameters(self, params_output_path):
-
         with open(params_output_path, 'r') as f:
             return json.load(f)
 
     def _load_alignment_parameters(self, params_output_path):
-
         with open(params_output_path, 'r') as f:
             return json.load(f)
 
-    def _save_normalization_parameters(self, params_output_dir, data_dict):
+    def _save_normalization_parameters(self, norm_output_dir, data_dict):
 
-        pp_done_path = os.path.join(params_output_dir, 'done')
-        pp_params_output_path = os.path.join(params_output_dir, 'params.json')
+        norm_done_path = os.path.join(norm_output_dir, 'done')
+        norm_output_path = os.path.join(norm_output_dir, 'normalizations.json')
 
-        if not os.path.exists(params_output_dir):
-            os.makedirs(params_output_dir)
-        with open(pp_params_output_path, 'w') as f:
+        if not os.path.exists(norm_output_dir):
+            os.makedirs(norm_output_dir)
+        with open(norm_output_path, 'w') as f:
             json.dump(data_dict, f)
-        with open(pp_done_path, 'w') as f:
+        with open(norm_done_path, 'w') as f:
             f.close()
 
-    def _save_alignment_parameters(self, params_output_dir, data_dict):
+    def _save_alignment_parameters(self, align_output_dir, data_dict):
 
-        pp_done_path = os.path.join(params_output_dir, 'done_r')
-        pp_params_output_path = os.path.join(params_output_dir,
-                                             'alignments.json')
+        align_done_path = os.path.join(align_output_dir, 'done')
+        align_output_path = os.path.join(align_output_dir, 'alignments.json')
 
-        if not os.path.exists(params_output_dir):
-            os.makedirs(params_output_dir)
-        with open(pp_params_output_path, 'w') as f:
+        if not os.path.exists(align_output_dir):
+            os.makedirs(align_output_dir)
+        with open(align_output_path, 'w') as f:
             json.dump(data_dict, f)
-        with open(pp_done_path, 'w') as f:
+        with open(align_done_path, 'w') as f:
             f.close()
 
     def get_normalization_parameters(self, db, exp_out, mode):
@@ -192,7 +177,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         done_path = os.path.join(out_path, 'done')
 
         if os.path.exists(done_path):
-            params_out_path = os.path.join(out_path, 'params.json')
+            params_out_path = os.path.join(out_path, 'normalizations.json')
             n_params = self._load_normalization_parameters(params_out_path)
         else:
             n_params = self._compute_normalization_parameters(db, data_dict)
@@ -200,7 +185,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
 
         self.train_norm_params = n_params
 
-    def get_alignment_parameters(self, db, exp_out, mode):
+    def get_alignment_parameters(self, db, meta, exp_out, mode):
         """Getting a dictionary of the alignment parameters."""
         """
             Arguments:
@@ -213,14 +198,14 @@ class PreprocessorISLESBasic(PreprocessorISLES):
         elif mode == 'test':
             data_dict = db.test_dict
 
-        out_path = os.path.join(exp_out, 'preprocessing', self.name(), mode)
-        done_path = os.path.join(out_path, 'done_r')
+        out_path = os.path.join(exp_out, 'alignment', self.name(), mode)
+        done_path = os.path.join(out_path, 'done')
 
         if os.path.exists(done_path):
             params_out_path = os.path.join(out_path, 'alignments.json')
             r_params = self._load_alignment_parameters(params_out_path)
         else:
-            r_params = self._compute_alignment_parameters(db, data_dict)
+            r_params = self._compute_alignment_parameters(db, meta, data_dict)
             self._save_alignment_parameters(out_path, r_params)
 
         self.train_rotate_params = r_params
