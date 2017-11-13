@@ -102,7 +102,7 @@ class PreprocessorISLESBasic(PreprocessorISLES):
             if s not in r_params:
                 r_params[s] = {}
 
-            brain_mask = meta.load_brain_mask(db, meta, data_dict[s])
+            brain_mask = meta.load_brain_mask(db, data_dict[s])
             mask = (np.sum(brain_mask != 0, axis=2) != 0).astype('float32')
             x, y = np.where(mask)
             p = np.polyfit(y, x, 1)
