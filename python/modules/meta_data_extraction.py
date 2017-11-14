@@ -29,7 +29,7 @@ class MetaDataExtractorISLES(object):
 
         bm_path = os.path.join(db.brain_masks_dir,
                                scan.name + '_brain_mask.bin')
-        bm = np.ones(scan.h, scan.w, scan.d)
+        bm = np.ones((scan.h, scan.w, scan.d), dtype='uint8')
         for m in db.modalities:
             v = scan.load_volume(db, m)
             bm *= (v != 0)
