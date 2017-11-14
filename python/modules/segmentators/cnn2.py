@@ -32,7 +32,7 @@ class CnnISLES2(SegmentatorISLES):
     """Segmentation class."""
 
     # restore_it=206
-    def __init__(self, lr, lw, kp=0.5, restore=True, restore_it=206,
+    def __init__(self, lr, lw, kp=0.5, restore=False, restore_it=0,
                  train_iters=500,
                  lp_w=25, lp_h=25, lp_d=14,
                  mp_w=15, mp_h=15, mp_d=12,
@@ -274,7 +274,7 @@ class CnnISLES2(SegmentatorISLES):
         self.sess.run(tf.global_variables_initializer())
         self.saver = tf.train.Saver(vars_to_save, max_to_keep=100000)
 
-    def training_and_validation(self, db, prep, patch_ex, exp_out):
+    def training_and_validation(self, db, meta, prep, patch_ex, exp_out):
         """Run slgorithm's training and validation."""
         """
             Arguments:
@@ -297,14 +297,16 @@ class CnnISLES2(SegmentatorISLES):
 
             for it in range(self.restore_it, self.train_iters):
 
-                self._train(db, prep, patch_ex, exp_out)
+                self._train(db, meta, prep, patch_ex, exp_out)
 
                 if it % 2 == 0:
 
                     train_acc_l_region, train_acc_s_region =\
-                        self._validate(db, prep, patch_ex, exp_out, 'train')
+                        self._validate(db, meta, prep, patch_ex, exp_out,
+                                       'train')
                     valid_acc_l_region, valid_acc_s_region =\
-                        self._validate(db, prep, patch_ex, exp_out, 'valid')
+                        self._validate(db, meta, prep, patch_ex, exp_out,
+                                       'valid')
 
                     print("train, valid accuracy:" + " " +
                           str(train_acc_l_region) + " " +
@@ -318,9 +320,9 @@ class CnnISLES2(SegmentatorISLES):
         else:
             print "Segmentator is already trained!"
 
-    def _train(self, db, prep, patch_ex, exp_out):
+    def _train(self, db, meta, prep, patch_ex, exp_out):
 
-        data = patch_ex.extract_train_or_valid_data(db, prep, exp_out, 'train')
+        data = patch_ex.extract_train_or_valid_data(db, meta, prep, exp_out, 'train')
 
         if data['region_1']['labels'].shape[0]:
             random_s =\
@@ -350,12 +352,14 @@ class CnnISLES2(SegmentatorISLES):
                                      self.gt_r2: data['region_2']['labels'],
                                      self.keep_prob: self.kp})
 
-    def _validate(self, db, prep, patch_ex, exp_out, subset):
+    def _validate(self, db, meta, prep, patch_ex, exp_out, subset):
         if subset == 'train':
-            data = patch_ex.extract_train_or_valid_data(db, prep, exp_out,
+            data = patch_ex.extract_train_or_valid_data(db, meta, prep,
+                                                        exp_out,
                                                         'train_valid')
         elif subset == 'valid':
-            data = patch_ex.extract_train_or_valid_data(db, prep, exp_out,
+            data = patch_ex.extract_train_or_valid_data(db, meta, prep,
+                                                        exp_out,
                                                         'valid')
 
         accuracy_l_region =\

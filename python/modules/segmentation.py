@@ -17,7 +17,7 @@ class SegmentatorISLES(object):
             save_model: saving trained model
             restore_model: restoreing trained model
     """
-    def training_and_validation(self, db, prep, patch_ex, exp_out):
+    def training_and_validation(self, db, meta, prep, patch_ex, exp_out):
         """Run slgorithm's training and validation."""
         """
             Arguments:
@@ -28,10 +28,10 @@ class SegmentatorISLES(object):
         """
         raise NotImplementedError()
 
-    def _validate(self, db, prep, patch_ex, exp_out, subset):
+    def _validate(self, db, meta, prep, patch_ex, exp_out, subset):
         raise NotImplementedError()
 
-    def _train(self, db, prep, patch_ex, exp_out):
+    def _train(self, db, meta, prep, patch_ex, exp_out):
         raise NotImplementedError()
 
     def _compute_clf_scores_per_scan(self, db, prep, patch_ex,

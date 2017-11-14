@@ -245,13 +245,13 @@ class PatchExtractorISLESForCNN(PatchExtractorISLES):
 
         return lpc[0:n_available, :], mpc[0:n_available], spc[0:n_available]
 
-    def _scan_patches(self, scan, db, prep, mode):
+    def _scan_patches(self, meta, scan, db, prep, mode):
 
         ps = {'region_1': {}, 'region_2': {}}
 
         sr = np.random.randint(3)
         orr = np.random.randint(4)
-        volumes = scan.load_volumes_norm_aligned(db, db.sizes[sr], orr)
+        volumes = meta.load_volumes_norm_aligned(db, scan, db.sizes[sr], orr)
         self._get_coordinates(volumes[0].shape)
         tdm_1 = volumes[7] * (volumes[8] <= self.td_th_1)
         tdm_2 = volumes[7] * (volumes[8] <= self.td_th_2)
@@ -322,7 +322,7 @@ class PatchExtractorISLESForCNN(PatchExtractorISLES):
 
         return data_r1, data_r2
 
-    def extract_train_or_valid_data(self, db, prep, exp_out, mode='train'):
+    def extract_train_or_valid_data(self, db, meta, prep, exp_out, mode='train'):
         """Extraction of training data with augmentation."""
         """
             Arguments:
@@ -343,7 +343,7 @@ class PatchExtractorISLESForCNN(PatchExtractorISLES):
             c['r2'][k] = 0
 
         for s_idx, s in enumerate(selected_scans):
-            data_s = self._scan_patches(data_dict[s], db, prep, mode)
+            data_s = self._scan_patches(meta, data_dict[s], db, prep, mode)
             for i in db.classes:
                 n = data_s['region_1'][i]['l_patch'].shape[0]
                 data['region_1'][i]['l_patch'][c['r1'][i]:

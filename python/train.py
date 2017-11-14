@@ -77,7 +77,7 @@ def main():
     # 7. Segmentator training and validation on training dataset
     # _______________________________________________________________________ #
     print "\nSegmentator training and validation..."
-    seg.training_and_validation(db, prep, patch_ex, args.exp_out)
+    seg.training_and_validation(db, meta, prep, patch_ex, args.exp_out)
     # 8. Segmentator validation in terms of Dice scores on training subset
     # _______________________________________________________________________ #
     print "\nSegmentator Dice score validation..."

@@ -27,7 +27,7 @@ class PatchExtractorISLES(object):
         """Initialization of PatchExtractorISLES attributes."""
         self.augment_train = augment_train in [True, 'True', 'true', 'yes', 'Yes']
 
-    def extract_train_or_valid_data(self, db, pp, seg, exp_out, mode='train'):
+    def extract_train_or_valid_data(self, db, meta, pp, seg, exp_out, mode='train'):
         """Extraction of training and validation data."""
         """
             Arguments:
