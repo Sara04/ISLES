@@ -81,16 +81,16 @@ class DatabaseISLES(object):
                 folder_name: folder where the training data is stored
         """
         folders = os.listdir(os.path.join(self.db_path, folder_name))
-        for fo in folders:
-            if fo.startswith('_'):
+        for scan_name in folders:
+            if scan_name.startswith('_'):
                 continue
-            if fo not in self.train_dict:
-                self.train_dict[fo] = {}
+            if scan_name not in self.train_dict:
+                self.train_dict[scan_name] = {}
 
                 modalities_dict = {}
 
                 modalities = os.listdir(os.path.join(self.db_path,
-                                                     folder_name, fo))
+                                                     folder_name, scan_name))
 
                 for m in modalities:
                     m_split = str.split(str(m), '.')
@@ -98,12 +98,11 @@ class DatabaseISLES(object):
                     if mb not in modalities_dict:
                         modalities_dict[mb] = m
 
-                scan_name = fo
-                s_relative_path = os.path.join(folder_name, fo)
-                self.train_dict[fo] = ScanISLES(self, scan_name,
-                                                s_relative_path,
-                                                modalities_dict,
-                                                'train')
+                s_relative_path = os.path.join(folder_name, scan_name)
+                self.train_dict[scan_name] = ScanISLES(self, scan_name,
+                                                       s_relative_path,
+                                                       modalities_dict,
+                                                       'train')
 
     def load_testing_dict(self, folder_name='ISLES2017_Testing'):
         """Loading training dictionary."""
@@ -112,16 +111,16 @@ class DatabaseISLES(object):
                 folder_name: folder where the testing data is stored
         """
         folders = os.listdir(os.path.join(self.db_path, folder_name))
-        for fo in folders:
-            if fo.startswith('_'):
+        for scan_name in folders:
+            if scan_name.startswith('_'):
                 continue
-            if fo not in self.test_dict:
-                self.test_dict[fo] = {}
+            if scan_name not in self.test_dict:
+                self.test_dict[scan_name] = {}
 
                 modalities_dict = {}
 
                 modalities = os.listdir(os.path.join(self.db_path,
-                                                     folder_name, fo))
+                                                     folder_name, scan_name))
 
                 for m in modalities:
                     m_split = str.split(str(m), '.')
@@ -129,12 +128,11 @@ class DatabaseISLES(object):
                     if mb not in modalities_dict:
                         modalities_dict[mb] = m
 
-                scan_name = fo
-                s_relative_path = os.path.join(folder_name, fo)
-                self.test_dict[fo] = ScanISLES(self, scan_name,
-                                               s_relative_path,
-                                               modalities_dict,
-                                               'test')
+                s_relative_path = os.path.join(folder_name, scan_name)
+                self.test_dict[scan_name] = ScanISLES(self, scan_name,
+                                                      s_relative_path,
+                                                      modalities_dict,
+                                                      'test')
 
     def train_valid_split(self, folder_name='ISLES2017_Training'):
         """Splitting training data into train and valid subsets."""
